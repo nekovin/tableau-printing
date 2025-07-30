@@ -6,59 +6,6 @@ import xml.etree.ElementTree as ET
 import shutil
 import pandas as pd
 
-
-def change_selected_pac(workbook_path, new_pac_value):
-    """Change the Selected PAC parameter to a new value"""
-    
-    # Make a backup copy first
-    original = Path(workbook_path)
-    backup = original.with_suffix('.twb.backup')
-    shutil.copy2(original, backup)
-    print(f"Backup created: {backup}")
-    
-    # Parse the XML
-    tree = ET.parse(workbook_path)
-    root = tree.getroot()
-    
-    changes_made = 0
-    
-    # Find ALL Selected PAC parameters (there are multiple instances)
-    for column in root.findall(".//column"):
-        if column.get('caption') == 'Selected PAC':
-            # Change the alias and value attributes
-            old_alias = column.get('alias')
-            old_value = column.get('value')
-            
-            # Update alias to match the new PAC
-            column.set('alias', new_pac_value)
-            
-            # Update value with proper format
-            new_value = f'"PAC - {new_pac_value}"'
-            column.set('value', new_value)
-            
-            # Also update the calculation formula
-            calculation = column.find('calculation')
-            if calculation is not None:
-                old_formula = calculation.get('formula')
-                new_formula = f'"PAC - {new_pac_value}"'
-                calculation.set('formula', new_formula)
-                print(f"  Updated calculation formula: {old_formula} → {new_formula}")
-            
-            print(f"Changed Selected PAC instance {changes_made + 1}:")
-            print(f"  Alias: {old_alias} → {new_pac_value}")
-            print(f"  Value: {old_value} → {new_value}")
-            
-            changes_made += 1
-    
-    if changes_made > 0:
-        # Save the modified file
-        tree.write(workbook_path, encoding='utf-8', xml_declaration=True)
-        print(f"Made {changes_made} changes and saved to: {workbook_path}")
-        return True
-    else:
-        print("Selected PAC parameter not found!")
-        return False
-
 def export_single_pdf(workbook_path, tableau_exe_path, output_dir, area, region):
     """
     Export PDF for a single area/region combination
@@ -74,7 +21,7 @@ def export_single_pdf(workbook_path, tableau_exe_path, output_dir, area, region)
     
     # Wait for Tableau to load
     print("Waiting for Tableau to load (25 seconds)...")
-    time.sleep(25)
+    time.sleep(15)
 
     # Click to ensure Tableau window is active
     pyautogui.click(500, 300)
@@ -123,7 +70,7 @@ def export_single_pdf(workbook_path, tableau_exe_path, output_dir, area, region)
 
     # Type the PDF filename
     #pdf_filename = f"Auburn - Walkin.pdf"
-    pdf_filename = f"{area} - {region}.pdf"
+    pdf_filename = f"{area} - {region} - Walkin.pdf"
     pyautogui.write(pdf_filename)
 
     # Click Save button
@@ -140,7 +87,7 @@ def export_single_pdf(workbook_path, tableau_exe_path, output_dir, area, region)
     pyautogui.hotkey('alt', 'f4')
     time.sleep(3)
 
-def change_selected_pac(workbook_path, new_pac_value):
+def change_selected_pac(workbook_path, new_pac_value, region):
     """Change the Selected PAC parameter to a new value"""
     
     # Make a backup copy first
@@ -187,6 +134,79 @@ def change_selected_pac(workbook_path, new_pac_value):
             
             print(f"Changed Selected PAC instance {changes_made + 1}:")
             print(f"  Alias: {old_alias} → {new_pac_value}")
+            print(f"  Value: {old_value} → {new_value}")
+            
+            changes_made += 1
+
+    # Update the Areas PAC filter
+    for filter_elem in root.findall(".//filter[@class='categorical']"):
+        column_attr = filter_elem.get('column')
+        if column_attr and 'Areas PAC' in column_attr:
+            groupfilter = filter_elem.find('groupfilter')
+            if groupfilter is not None:
+                old_member = groupfilter.get('member')
+                new_member = f'"{area_type} - {new_pac_value}"'
+                groupfilter.set('member', new_member)
+                print(f"Updated Areas PAC filter: {old_member} → {new_member}")
+                changes_made += 1
+
+    for filter_elem in root.findall(".//filter[@class='categorical']"):
+        column_attr = filter_elem.get('column')
+        if column_attr and 'Areas Region' in column_attr:
+            groupfilter = filter_elem.find('groupfilter')
+            if groupfilter is not None:
+                old_member = groupfilter.get('member')
+                new_member = f'"{region}"'
+                groupfilter.set('member', new_member)
+                print(f"Updated Areas Region filter: {old_member} → {new_member}")
+                changes_made += 1
+    
+    for value_elem in root.findall(".//value"):
+        if value_elem.text == '"South West Metropolitan"':
+            value_elem.text = f'"{region}"'
+            changes_made += 1
+
+    print(f"Updated {sum(1 for v in root.findall('.//value') if v.text == f'\\"{region}\\"')} region tuple values")
+        
+    # Map full region names to their aliases in TWB
+    region_mapping = {
+        'Central Metropolitan': 'Central Metro',
+        'North West Metropolitan': 'North West Metro', 
+        'Northern': 'Northern',
+        'South West Metropolitan': 'South West Metro',
+        'Southern': 'Southern',
+        'Western': 'Western'
+    }
+
+    # Get the correct alias for the region
+    region_alias = region_mapping.get(region, region)
+
+    
+    # Find and update Selected Region parameters
+    for column in root.findall(".//column"):
+        caption = column.get('caption')
+        print(f"Found column caption: '{caption}'")
+        print(f"Caption equals 'Selected Region': {caption == 'Selected Region'}")  # Add this line
+
+        if column.get('caption') == 'Selected Region':
+            old_alias = column.get('alias')
+            old_value = column.get('value')
+            
+            # Update alias and value for region
+            column.set('alias', region_alias)
+            new_value = f'"{region}"'
+            column.set('value', new_value)
+            
+            # Update calculation formula
+            calculation = column.find('calculation')
+            if calculation is not None:
+                old_formula = calculation.get('formula')
+                new_formula = f'"{region}"'
+                calculation.set('formula', new_formula)
+                print(f"  Updated region calculation formula: {old_formula} → {new_formula}")
+            
+            print(f"Changed Selected Region:")
+            print(f"  Alias: {old_alias} → {region_alias}")
             print(f"  Value: {old_value} → {new_value}")
             
             changes_made += 1
@@ -301,7 +321,7 @@ def process_filter_file(filter_file_path, workbook_path, tableau_exe_path, outpu
         
         # Step 1: Change the parameter in the workbook
         print(f"Step 1: Changing Selected PAC parameter to {area}...")
-        success = change_selected_pac(workbook_path, area)
+        success = change_selected_pac(workbook_path, area, region)
         
         if not success:
             print(f"❌ Failed to change parameter for {area}. Skipping...")
