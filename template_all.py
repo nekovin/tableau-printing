@@ -137,14 +137,12 @@ def create_region_templates(source_twb_path, region_names):
         
         # Create output filename
         safe_region_name = region_display.replace(" ", "_")
-        # Save to output directory with region subdirectory
-        output_base_dir = source_path.parent.parent / "output"
-        output_base_dir.mkdir(exist_ok=True)
-        region_output_dir = output_base_dir / safe_region_name
-        region_output_dir.mkdir(exist_ok=True)
-        # Determine service type from source file name
+        # Save to service type output directory (telephone/output or walkin/output)
         service_type = "Telephone" if "Telephone" in source_path.name else "Walk-in"
-        output_path = region_output_dir / f"{region_display} - {service_type}.twb"
+        service_folder = "telephone" if "Telephone" in source_path.name else "walkin"
+        output_dir = Path(service_folder) / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir / f"{region_display} - {service_type}.twb"
 
         print("Region Template Path:", output_path)
         
