@@ -19,7 +19,12 @@ def create_region_templates(source_twb_path):
     for region in regions:
         # Create output filename
         safe_region = region.replace(" ", "_")
-        output_path = source_path.with_name(f"{source_path.stem}_{safe_region}.twb")
+        # Save to output directory
+        output_dir = source_path.parent.parent / "output"
+        output_dir.mkdir(exist_ok=True)  # Create output folder if it doesn't exist
+        output_path = output_dir / f"{source_path.stem}_{safe_region}.twb"
+
+        print("Path:", output_path)
         
         # Copy source file
         shutil.copy2(source_path, output_path)
@@ -46,7 +51,6 @@ def create_region_templates(source_twb_path):
             "Central Metropolitan": "Central Metro",
             "North West Metropolitan": "North West Metro", 
             "South West Metropolitan": "South West Metro",
-            "NSW": "NSW",
             "Northern": "Northern",
             "Southern": "Southern",
             "Western": "Western"
@@ -75,6 +79,6 @@ def create_region_templates(source_twb_path):
         break
 
 # Usage
-source_file = r"telephone\NSW Police Service Assessment Telephone.twb"
+source_file = r"telephone\templates\NSW Police Service Assessment Telephone.twb"
 #source_file = r"walkin\NSW Police Service Assessment Walk-in.twb"
 create_region_templates(source_file)
