@@ -58,6 +58,12 @@ def extract_pac_names_from_pdfs():
                             " - Walkin",
                             " -Walk In",
                             " - Central Metropolitan - Walkin",
+                            " - Central Metropolitan",
+                            " - North West Metropolitan",
+                            " - South West Metropolitan", 
+                            " - Northern",
+                            " - Southern",
+                            " - Western",
                             "- Telephone",
                             " Telephone",
                             " - old",
@@ -136,7 +142,9 @@ def create_region_templates(source_twb_path, region_names):
         output_base_dir.mkdir(exist_ok=True)
         region_output_dir = output_base_dir / safe_region_name
         region_output_dir.mkdir(exist_ok=True)
-        output_path = region_output_dir / f"{source_path.stem}_Region_{safe_region_name}.twb"
+        # Determine service type from source file name
+        service_type = "Telephone" if "Telephone" in source_path.name else "Walk-in"
+        output_path = region_output_dir / f"{region_display} - {service_type}.twb"
 
         print("Region Template Path:", output_path)
         
@@ -282,7 +290,9 @@ def create_pac_templates(source_twb_path):
         output_base_dir.mkdir(exist_ok=True)
         region_output_dir = output_base_dir / region_dir_name
         region_output_dir.mkdir(exist_ok=True)
-        output_path = region_output_dir / f"{source_path.stem}_{safe_pac_name}.twb"
+        # Determine service type from source file name
+        service_type = "Telephone" if "Telephone" in source_path.name else "Walk-in"
+        output_path = region_output_dir / f"{safe_pac_name} - {service_type}.twb"
 
         print("Path:", output_path)
         
