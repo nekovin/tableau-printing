@@ -77,6 +77,6 @@ def create_region_templates(source_twb_path):
         print(f"Created: {output_path}")
 
 # Usage
-#source_file = r"telephone\templates\NSW Police Service Assessment Telephone.twb"
-source_file = r"walkin\templates\NSW Police Service Assessment Walk-in.twb"
+source_file = r"telephone\templates\NSW Police Service Assessment Telephone.twb"
+#source_file = r"walkin\templates\NSW Police Service Assessment Walk-in.twb"
 create_region_templates(source_file)
