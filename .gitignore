@@ -4,3 +4,4 @@ old/
 venv
 telephone/output/
 walkin/output/
+secrets.txt
