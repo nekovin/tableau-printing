@@ -76,9 +76,7 @@ def create_region_templates(source_twb_path):
         tree.write(output_path, encoding='utf-8', xml_declaration=True)
         print(f"Created: {output_path}")
 
-        break
-
 # Usage
-source_file = r"telephone\templates\NSW Police Service Assessment Telephone.twb"
-#source_file = r"walkin\NSW Police Service Assessment Walk-in.twb"
+#source_file = r"telephone\templates\NSW Police Service Assessment Telephone.twb"
+source_file = r"walkin\templates\NSW Police Service Assessment Walk-in.twb"
 create_region_templates(source_file)
